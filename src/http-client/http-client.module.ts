@@ -2,15 +2,16 @@ import { Module } from '@nestjs/common';
 import { HttpClientService } from './http-client.service';
 import { HttpModule } from '@nestjs/axios';
 import { HttpConfigService } from './http-config.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AppPropertiesService } from '../app-properties/app-properties.service';
+import { AppPropertiesModule } from '../app-properties/app-properties.module';
 
 @Module({
-  providers: [HttpClientService, HttpConfigService, ConfigService],
+  providers: [HttpClientService, HttpConfigService, AppPropertiesService],
   imports: [
     HttpModule.registerAsync({
-      imports: [ConfigModule],
+      imports: [AppPropertiesModule],
       useClass: HttpConfigService,
-      inject: [ConfigService],
+      inject: [AppPropertiesService],
     }),
   ],
   exports: [HttpClientService],

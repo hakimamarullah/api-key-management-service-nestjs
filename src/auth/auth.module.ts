@@ -4,21 +4,23 @@ import { JwtConfigService } from './jwt-config.service';
 import { HttpClientService } from '../http-client/http-client.service';
 import { HttpClientModule } from '../http-client/http-client.module';
 import { HttpModule } from '@nestjs/axios';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HttpConfigService } from '../http-client/http-config.service';
+import { AppPropertiesModule } from '../app-properties/app-properties.module';
+import { AppPropertiesService } from '../app-properties/app-properties.service';
 
 @Module({
   providers: [JwtConfigService, HttpClientService],
   imports: [
+    AppPropertiesModule,
     HttpModule.registerAsync({
-      imports: [ConfigModule],
+      imports: [AppPropertiesModule],
       useClass: HttpConfigService,
-      inject: [ConfigService],
+      inject: [AppPropertiesService],
     }),
     JwtModule.registerAsync({
-      imports: [HttpClientModule, AuthModule, HttpModule],
+      imports: [HttpClientModule, HttpModule, AppPropertiesModule],
       useClass: JwtConfigService,
-      inject: [JwtConfigService, HttpClientService],
+      inject: [JwtConfigService, HttpClientService, AppPropertiesService],
     }),
   ],
 })

@@ -1,19 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { HttpModuleOptions, HttpModuleOptionsFactory } from '@nestjs/axios';
+import { AppPropertiesService } from '../app-properties/app-properties.service';
 
 @Injectable()
 export class HttpConfigService implements HttpModuleOptionsFactory {
-  constructor(private configService: ConfigService) {}
+  constructor(private appProperties: AppPropertiesService) {}
 
   createHttpOptions(): Promise<HttpModuleOptions> | HttpModuleOptions {
-    const options: HttpModuleOptions = {
+    return {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.configService.get<string>('AUTH_SERVICE_TOKEN')}`,
+        Authorization: `Bearer ${this.appProperties.getAuthServiceToken()}`,
       },
       timeout: 10000,
     };
-    return options;
   }
 }

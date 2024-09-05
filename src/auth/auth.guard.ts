@@ -13,7 +13,8 @@ import { CachingService } from '../caching/caching.service';
 import { CacheConstant } from '../caching/cache.constant';
 import { HttpClientService } from '../http-client/http-client.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { ConfigService } from '@nestjs/config';
+import { AppPropertiesService } from '../app-properties/app-properties.service';
+import { convertPatternToRegExp, convertTo } from '../common/utils/common.util';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -24,7 +25,7 @@ export class AuthGuard implements CanActivate {
     private reflector: Reflector,
     private cachingService: CachingService,
     private httpClient: HttpClientService,
-    private configService: ConfigService,
+    private appProperties: AppPropertiesService,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [
@@ -47,6 +48,7 @@ export class AuthGuard implements CanActivate {
         userRoles ?? [],
         paths ?? {},
       );
+
       this.checkIsAllowed(pathsSet, request.path);
       (request as any)['user'] = payload;
     } catch (error) {
@@ -61,28 +63,38 @@ export class AuthGuard implements CanActivate {
   }
 
   private async getUserRoles(userId: number) {
-    const roles = await this.cachingService.getRolesByUserId(userId);
+    let roles = await this.cachingService.getRolesByUserId(userId);
     if (!roles) {
       const { responseData } = await this.httpClient.get<any>(
-        `/roles/user/${userId}`,
+        `${this.appProperties.getAuthServiceBaseUrl()}/roles/user/${userId}`,
       );
-      this.logger.debug({ responseData });
+      roles = responseData as string[];
       await this.cachingService.setRoles(userId, responseData);
     }
     return roles;
   }
 
   private async getAllPaths() {
-    const roles = await this.cachingService.get<{
+    let rolePaths = await this.cachingService.get<{
       [roleName: string]: RegExp[];
     }>(CacheConstant.CacheKey.ROLES_PATHS);
 
-    if (!roles) {
-      const { responseData } = await this.httpClient.get<any>('/roles/paths');
-      this.logger.debug({ responseData });
+    if (!rolePaths) {
+      const { responseData } = await this.httpClient.get<any>(
+        `${this.appProperties.getAuthServiceBaseUrl()}/roles/paths`,
+      );
+
+      if (!responseData) {
+        throw new UnauthorizedException('Role paths not found');
+      }
+      rolePaths = await convertTo(responseData, convertPatternToRegExp);
+      await this.cachingService.set(
+        CacheConstant.CacheKey.ROLES_PATHS,
+        rolePaths,
+      );
     }
 
-    return roles;
+    return rolePaths;
   }
 
   private async getPathPatternSet(
@@ -105,7 +117,18 @@ export class AuthGuard implements CanActivate {
     const anyMatchedPath = Array.from(pathPatternSet).some((pattern) =>
       pattern.test(path),
     );
-    if (!pathPatternSet || !pathPatternSet.size || !anyMatchedPath) {
+    if (!pathPatternSet) {
+      throw new UnauthorizedException(
+        'You are not allowed to access this path',
+      );
+    }
+    if (!pathPatternSet.size) {
+      throw new UnauthorizedException(
+        'You are not allowed to access this path',
+      );
+    }
+
+    if (!anyMatchedPath) {
       throw new UnauthorizedException(
         'You are not allowed to access this path',
       );

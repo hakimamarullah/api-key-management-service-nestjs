@@ -13,6 +13,8 @@ import { JwtConfigService } from './auth/jwt-config.service';
 import { AuthModule } from './auth/auth.module';
 import { HttpModule } from '@nestjs/axios';
 import { CachingService } from './caching/caching.service';
+import { AppPropertiesModule } from './app-properties/app-properties.module';
+import { AppPropertiesService } from './app-properties/app-properties.service';
 
 @Module({
   imports: [
@@ -22,10 +24,11 @@ import { CachingService } from './caching/caching.service';
     PrismaModule,
     HttpClientModule,
     JwtModule.registerAsync({
-      imports: [HttpClientModule, AuthModule, HttpModule],
+      imports: [HttpClientModule, AuthModule, HttpModule, AppPropertiesModule],
       useClass: JwtConfigService,
-      inject: [JwtConfigService, HttpClientService],
+      inject: [JwtConfigService, HttpClientService, AppPropertiesService],
     }),
+    AppPropertiesModule,
   ],
   providers: [
     PrismaService,

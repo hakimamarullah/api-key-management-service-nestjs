@@ -149,7 +149,9 @@ export const getPrismaError = (error: any): PrismaError => {
  * @param pattern The wildcard pattern (e.g., '/api/somepath/*')
  * @returns A regular expression that matches the pattern.
  */
-export const convertPatternToRegExp = (pattern: string): RegExp => {
+export const convertPatternToRegExp = async (
+  pattern: string,
+): Promise<RegExp> => {
   const escapedPattern = pattern
     .replace(/([.*+?^${}()|[\]\\])/g, '\\$1') // Escape special characters
     .replace(/:\w+/g, '\\w+') // Convert ':id' or ':parameter' to '\d+' for numeric values
@@ -166,4 +168,36 @@ export const convertPatternToRegExp = (pattern: string): RegExp => {
 
 export const getUsername = (request: any) => {
   return request?.user?.username;
+};
+
+export const convertTo = async <T>(
+  data: { [keyName: string]: string[] },
+  transformer: (value: any) => Promise<T>,
+): Promise<{ [keyName: string]: T[] }> => {
+  const logger = new Logger('CommonUtil.ConvertTo');
+  // Create a new object to store the results
+  const result: { [keyName: string]: T[] } = {};
+
+  // Iterate over each key in the input data
+  for (const keyName of Object.keys(data)) {
+    // Map each string pattern to its transformed value
+    const transformedArray = await Promise.all(
+      data[keyName].map(async (patternString) => {
+        try {
+          return await transformer(patternString);
+        } catch (e) {
+          logger.error(
+            `Error transforming pattern string: ${patternString}`,
+            e,
+          );
+          return null; // Exclude any failed transformations
+        }
+      }),
+    ).then((arr) => arr.filter((item) => item !== null)); // Filter out null values
+
+    // Add the transformed array to the result object
+    result[keyName] = transformedArray as T[];
+  }
+
+  return result;
 };
