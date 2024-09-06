@@ -16,7 +16,8 @@ async function bootstrap() {
   );
 
   const server = app.getHttpServer();
-  app.setGlobalPrefix(configService.get<string>('PROXY_PREFIX', ''));
+  const proxyPrefix = configService.get<string>('PROXY_PREFIX', '');
+  app.setGlobalPrefix(proxyPrefix);
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new ErrorFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
@@ -49,7 +50,7 @@ async function bootstrap() {
     })
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('/swagger', app, document, {
+  SwaggerModule.setup(`/${proxyPrefix}/swagger`, app, document, {
     jsonDocumentUrl: 'swagger/json',
   });
 
