@@ -12,7 +12,7 @@ export class HttpConfigService implements HttpModuleOptionsFactory {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${this.appProperties.getAuthServiceToken()}`,
       },
-      timeout: 10000,
+      timeout: this.appProperties.getAuthServiceHttpTimeout(),
     };
   }
 }

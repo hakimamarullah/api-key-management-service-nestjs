@@ -11,4 +11,8 @@ export class AppPropertiesService {
   public getAuthServiceToken() {
     return this.configService.get('AUTH_SERVICE_TOKEN', 'token');
   }
+
+  public getAuthServiceHttpTimeout() {
+    return this.configService.get<number>('AUTH_SERVICE_HTTP_TIMEOUT', 10000);
+  }
 }

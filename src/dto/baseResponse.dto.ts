@@ -19,15 +19,11 @@ export class BaseResponse<T> {
     return response;
   }
 
-  static getResponseCreated<T>(data?: T, message?: string) {
-    return BaseResponse.getSuccessResponse(data, message, HttpStatus.CREATED);
-  }
-
-  static getUnauthorizedResponse<T>(data?: T, message?: string) {
+  static getBadRequestResponse<T>(data?: T, message?: string) {
     const response: BaseResponse<T> = new BaseResponse();
-    response.responseCode = HttpStatus.UNAUTHORIZED;
-    response.responseMessage = message ?? 'Unauthorized';
-    response.responseData = data ?? ('Unauthorized' as any);
+    response.responseCode = HttpStatus.BAD_REQUEST;
+    response.responseMessage = message ?? 'Bad Request';
+    response.responseData = data ?? ('Bad Request' as any);
     return response;
   }
 }

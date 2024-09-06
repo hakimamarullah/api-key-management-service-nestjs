@@ -1,5 +1,6 @@
 import { BadRequestException, HttpStatus, Logger } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { BaseResponse } from '../../dto/baseResponse.dto';
 import {
   PrismaClientKnownRequestError,
@@ -200,4 +201,21 @@ export const convertTo = async <T>(
   }
 
   return result;
+};
+
+/**
+ * Generate a random API key.
+ *
+ * The API key is a 256-bit (32-byte) AES key, represented as a hexadecimal
+ * string. The key is generated using the `crypto` module's `generateKeySync`
+ * method, which generates a cryptographically secure random key.
+ *
+ * @returns The generated API key, as a hexadecimal string.
+ */
+
+export const generateApiKey = (): string => {
+  return crypto
+    .generateKeySync('aes', { length: 256 })
+    .export()
+    .toString('hex');
 };

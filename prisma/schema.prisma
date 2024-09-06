@@ -13,27 +13,37 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model ApiKey {
-  id        Int         @id @default(autoincrement())
-  apiKey    String      @unique @map("api_key") @db.VarChar(500)
-  tier      ApiKeyTier? @relation(fields: [tierId], references: [id], onDelete: SetNull)
-  tierId    Int?        @map("tier_id")
-  expiredAt DateTime?   @map("expired_at") @db.Date()
-  createdAt DateTime    @default(now()) @map("created_at")
-  updatedAt DateTime    @updatedAt @map("updated_at")
+enum ApiKeyStatus {
+  ACTIVE
+  REPLACED
+  EXPIRED
+}
 
+model ApiKey {
+  id        Int          @id @default(autoincrement())
+  apiKey    String       @map("api_key") @db.VarChar(500)
+  tier      ApiKeyTier?  @relation(fields: [tierId], references: [id], onDelete: SetNull)
+  tierId    Int?         @map("tier_id")
+  owner     String       @map("owner") @db.VarChar(50)
+  status    ApiKeyStatus @default(ACTIVE)
+  expiredAt DateTime?    @map("expired_at") @db.Date()
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  @@unique([apiKey, tierId])
   @@index([apiKey])
   @@map("api_key")
 }
 
 model ApiKeyTier {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  limit     Int      @default(0)
-  ttl       Int      @default(0)
-  apiKeys   ApiKey[]
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  limit       Int      @default(0)
+  ttl         Int      @default(0)
+  description String?  @db.VarChar(500)
+  apiKeys     ApiKey[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("api_key_tier")
 }
