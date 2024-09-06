@@ -50,10 +50,11 @@ async function bootstrap() {
     })
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup(`/${proxyPrefix}/swagger`, app, document, {
+  SwaggerModule.setup(`/swagger`, app, document, {
     jsonDocumentUrl: 'swagger/json',
+    useGlobalPrefix: true,
   });
 
   app.listen(port).then(() => logger.log(`Server started on port ${port}`));
 }
-bootstrap();
+(async () => await bootstrap())();
