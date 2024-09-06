@@ -117,18 +117,7 @@ export class AuthGuard implements CanActivate {
     const anyMatchedPath = Array.from(pathPatternSet).some((pattern) =>
       pattern.test(path),
     );
-    if (!pathPatternSet) {
-      throw new UnauthorizedException(
-        'You are not allowed to access this path',
-      );
-    }
-    if (!pathPatternSet.size) {
-      throw new UnauthorizedException(
-        'You are not allowed to access this path',
-      );
-    }
-
-    if (!anyMatchedPath) {
+    if (!pathPatternSet?.size || !anyMatchedPath) {
       throw new UnauthorizedException(
         'You are not allowed to access this path',
       );
