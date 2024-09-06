@@ -1,9 +1,9 @@
 services:
   auth-service:
     image: hakimamarullah/api-key-management-service-nestjs:v1.0.0
-    container_name: auth-service
+    container_name: api-key-management-service
     restart: on-failure
     ports:
-      -   3000:3000
+      -   3002:3002
     env_file:
       -   .env.docker

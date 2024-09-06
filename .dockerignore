@@ -1,0 +1,14 @@
+Dockerfile
+.dockerignore
+node_modules
+npm-debug.log
+dist
+
+
+README.md
+seed_wilayah.py
+*.sh
+
+test
+*.out
+logs.out

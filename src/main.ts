@@ -16,6 +16,7 @@ async function bootstrap() {
   );
 
   const server = app.getHttpServer();
+  app.setGlobalPrefix(configService.get<string>('PROXY_PREFIX', ''));
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new ErrorFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
