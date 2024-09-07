@@ -41,6 +41,7 @@ model ApiKeyTier {
   limit       Int      @default(0)
   ttl         Int      @default(0)
   description String?  @db.VarChar(500)
+  price       Float?   @default(0.0)
   apiKeys     ApiKey[]
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
