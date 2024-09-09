@@ -152,4 +152,13 @@ export class ApiKeyManagerService {
     });
     return BaseResponse.getSuccessResponse<any>(data);
   }
+
+  async getTierById(id: number) {
+    const data = await this.prismaService.apiKeyTier.findFirstOrThrow({
+      where: {
+        id,
+      },
+    });
+    return BaseResponse.getSuccessResponse(ApiKeyTierDto.build(data));
+  }
 }

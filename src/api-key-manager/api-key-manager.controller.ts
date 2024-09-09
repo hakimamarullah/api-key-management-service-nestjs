@@ -23,6 +23,7 @@ import { GenerateKeyRequest } from './dto/request/generateKey.request';
 import { ValidateKeyResponse } from './dto/response/validateKey.response';
 import { CreateTierRequest } from './dto/request/createTier.request';
 import { UpdateTierRequest } from './dto/request/updateTier.request';
+import { Public } from '../auth/decorator/public.decorator';
 
 @ApiBearerAuth()
 @ApiTags('ApiKeyManager Controller')
@@ -88,5 +89,15 @@ export class ApiKeyManagerController {
   @ApiBody({ type: UpdateTierRequest })
   async updateTier(@Body() request: UpdateTierRequest) {
     return this.apiKeymanager.updateTier(request);
+  }
+
+  @Get('tiers/:tierId/details')
+  @Public()
+  @ApiOperation({ summary: 'Get API Tier By ID' })
+  @HttpCode(HttpStatus.OK)
+  @ApiBaseResponse({ model: ApiKeyTierDto })
+  @ApiParamId({ name: 'tierId' })
+  async getTierById(@Param('tierId', ParseIntPipe) tierId: number) {
+    return this.apiKeymanager.getTierById(tierId);
   }
 }
