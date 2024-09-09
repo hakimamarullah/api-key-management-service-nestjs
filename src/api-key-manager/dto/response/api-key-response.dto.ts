@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class ApiKeyResponseDto {
   constructor(newApiKey?: string, expiryDate?: Date, description?: string) {
     this.apiKey = newApiKey;
-    this.expiresAt = expiryDate;
+    this.expiredAt = expiryDate;
     this.description = description;
   }
 
@@ -11,7 +11,7 @@ export class ApiKeyResponseDto {
   apiKey: string | undefined;
 
   @ApiProperty({ readOnly: true })
-  expiresAt: Date | undefined;
+  expiredAt: Date | undefined;
 
   @ApiProperty({ readOnly: true })
   description: string | undefined;
@@ -25,7 +25,7 @@ export class ApiKeyResponseDto {
   static build(data: any) {
     const response = new ApiKeyResponseDto();
     response.apiKey = data?.apiKey;
-    response.expiresAt = data?.expiresAt;
+    response.expiredAt = data?.expiredAt;
     response.description = data?.tier?.description ?? data?.description ?? '';
     response.tierName = data?.tier?.name ?? '';
     response.limit = data?.tier?.limit ?? 0;
