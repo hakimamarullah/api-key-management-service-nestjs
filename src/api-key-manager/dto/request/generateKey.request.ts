@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { ApiKeyStatus } from '@prisma/client';
 
 export class GenerateKeyRequest {
@@ -26,4 +32,13 @@ export class GenerateKeyRequest {
   })
   @IsEnum(ApiKeyStatus, { message: 'status must be a valid ApiKeyStatus' })
   status: ApiKeyStatus;
+
+  @ApiProperty({
+    description: 'Reference ID',
+    required: false,
+  })
+  @IsOptional()
+  @IsNotEmpty({ message: 'referenceId is required' })
+  @IsString({ message: 'referenceId must be a string' })
+  refId: string;
 }

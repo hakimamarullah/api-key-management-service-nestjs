@@ -55,7 +55,7 @@ export class ApiKeyManagerService {
   }
 
   async generateApiKey(request: GenerateKeyRequest) {
-    const { tierId: apiKeyTier, username, status } = request;
+    const { tierId: apiKeyTier, username, status, refId } = request;
 
     const oldApiKey = await this.prismaService.apiKey.findFirst({
       where: {
@@ -103,6 +103,7 @@ export class ApiKeyManagerService {
         tierId: apiKeyTier,
         owner: username,
         status: status ?? defaultStatus,
+        refId: refId,
       },
     });
     return BaseResponse.getResponse<ApiKeyResponseDto>(
