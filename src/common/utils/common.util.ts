@@ -2,10 +2,7 @@ import { BadRequestException, HttpStatus, Logger } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { BaseResponse } from '../../dto/baseResponse.dto';
-import {
-  PrismaClientKnownRequestError,
-  PrismaClientValidationError,
-} from '@prisma/client/runtime/library';
+import { PrismaClientValidationError } from '@prisma/client/runtime/library';
 
 export const extractUsernameFromEmail = (email: string): string => {
   if (!email) {
@@ -53,25 +50,17 @@ export const isPasswordValid = (
 export const translatePrismaError = (err: Error, defaultMessage: string) => {
   const response: BaseResponse<any> = new BaseResponse();
   response.responseMessage = defaultMessage;
-  switch (err.name) {
-    case PrismaClientKnownRequestError.name: {
-      const prismaErr: PrismaError = getPrismaError(err);
-      response.responseCode = prismaErr.httpStatus;
-      response.responseData = prismaErr.message;
-      break;
-    }
-    case PrismaClientValidationError.name: {
-      response.responseCode = HttpStatus.BAD_REQUEST;
-      const messages = err.message.split('\n');
-      response.responseData =
-        messages[messages.length - 1]?.trim() ??
-        PrismaClientValidationError.name;
-      break;
-    }
-    default:
-      response.responseCode = HttpStatus.INTERNAL_SERVER_ERROR;
-      break;
+  if (err instanceof PrismaClientValidationError) {
+    response.responseCode = HttpStatus.BAD_REQUEST;
+    const messages = err.message.split('\n');
+    response.responseData =
+      messages[messages.length - 1]?.trim() ?? PrismaClientValidationError.name;
+    return response;
   }
+
+  const prismaErr: PrismaError = getPrismaError(err);
+  response.responseCode = prismaErr.httpStatus;
+  response.responseData = prismaErr.message;
   return response;
 };
 
@@ -114,7 +103,7 @@ export const getPrismaError = (error: any): PrismaError => {
       };
     case 'P2025':
       return {
-        message: `${error.meta.cause} Model: ${error.meta.modelName}`,
+        message: `Data not found`,
         httpStatus: HttpStatus.NOT_FOUND,
       };
     case 'P2003':
