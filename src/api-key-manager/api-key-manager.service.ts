@@ -134,7 +134,7 @@ export class ApiKeyManagerService {
     });
 
     return BaseResponse.getResponse<ApiKeyResponseDto>(
-      new ApiKeyResponseDto(newApiKey, expiryDate),
+      new ApiKeyResponseDto(newApiKey, expiryDate, 'rotate key'),
     );
   }
 
@@ -188,5 +188,19 @@ export class ApiKeyManagerService {
       },
     });
     return BaseResponse.getResponse<any>(data);
+  }
+
+  async getActiveApiKeysByUsername(username: string) {
+    const data = await this.prismaService.apiKey.findMany({
+      where: {
+        owner: username,
+        status: ApiKeyStatus.ACTIVE,
+      },
+      include: {
+        tier: true,
+      },
+    });
+    const result = data.map((item: any) => ApiKeyResponseDto.build(item));
+    return BaseResponse.getResponse<ApiKeyResponseDto[]>(result);
   }
 }

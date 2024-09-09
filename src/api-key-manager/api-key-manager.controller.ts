@@ -10,7 +10,13 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import {
   ApiBaseResponse,
   ApiParamId,
@@ -109,5 +115,13 @@ export class ApiKeyManagerController {
   @ApiBody({ type: UpdateKeyRequest })
   async updateApiKeyStatus(@Body() request: UpdateKeyRequest) {
     return await this.apiKeymanager.updateApiKeyStatus(request);
+  }
+
+  @Get('api-keys/:username/active')
+  @HttpCode(HttpStatus.OK)
+  @ApiBaseResponse({ model: ApiKeyResponseDto, isArray: true })
+  @ApiParam({ name: 'username' })
+  async getApiKeysByUsername(@Param('username') username: string) {
+    return await this.apiKeymanager.getActiveApiKeysByUsername(username);
   }
 }
