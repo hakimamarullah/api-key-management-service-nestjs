@@ -15,6 +15,7 @@ datasource db {
 
 enum ApiKeyStatus {
   ACTIVE
+  INACTIVE
   REPLACED
   EXPIRED
 }
@@ -25,7 +26,7 @@ model ApiKey {
   tier      ApiKeyTier?  @relation(fields: [tierId], references: [id], onDelete: SetNull)
   tierId    Int?         @map("tier_id")
   owner     String       @map("owner") @db.VarChar(50)
-  status    ApiKeyStatus @default(ACTIVE)
+  status    ApiKeyStatus @default(INACTIVE)
   expiredAt DateTime?    @map("expired_at") @db.Date()
   createdAt DateTime     @default(now()) @map("created_at")
   updatedAt DateTime     @updatedAt @map("updated_at")

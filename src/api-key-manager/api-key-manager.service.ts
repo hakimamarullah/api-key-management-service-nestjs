@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CachingService } from '../caching/caching.service';
 import { CacheConstant } from '../caching/cache.constant';
@@ -16,6 +16,7 @@ import { ApiKeyStatus } from '@prisma/client';
 import { ValidateKeyResponse } from './dto/response/validateKey.response';
 import { CreateTierRequest } from './dto/request/createTier.request';
 import { UpdateTierRequest } from './dto/request/updateTier.request';
+import { UpdateKeyRequest } from './dto/request/updateKey.request';
 
 @Injectable()
 export class ApiKeyManagerService {
@@ -50,13 +51,11 @@ export class ApiKeyManagerService {
       throw new NotFoundException('API Key not found');
     }
 
-    return BaseResponse.getSuccessResponse(
-      ValidateKeyResponse.build(apiKeyData),
-    );
+    return BaseResponse.getResponse(ValidateKeyResponse.build(apiKeyData));
   }
 
   async generateApiKey(request: GenerateKeyRequest) {
-    const { tierId: apiKeyTier, username } = request;
+    const { tierId: apiKeyTier, username, status } = request;
 
     const oldApiKey = await this.prismaService.apiKey.findFirst({
       where: {
@@ -69,7 +68,15 @@ export class ApiKeyManagerService {
     let expiryDate: Date;
     let description: string;
     const newApiKey: string = generateApiKey();
+    const isFreeTier = (oldApiKey as any)?.name === 'FREE';
     if (oldApiKey) {
+      if (isFreeTier) {
+        return BaseResponse.getResponse(
+          null,
+          'Free tier cannot have more than one active api-key',
+          HttpStatus.CONFLICT,
+        );
+      }
       expiryDate = addDays(<Date>oldApiKey['expiredAt'], 30);
       description = 'You old api-key is replaced by new one';
       await this.prismaService.apiKey.update({
@@ -84,16 +91,21 @@ export class ApiKeyManagerService {
       expiryDate = next30Days();
       description = 'New api-key generated';
     }
+
+    const defaultStatus = isFreeTier
+      ? ApiKeyStatus.ACTIVE
+      : ApiKeyStatus.INACTIVE;
+
     await this.prismaService.apiKey.create({
       data: {
         apiKey: newApiKey,
         expiredAt: expiryDate,
         tierId: apiKeyTier,
         owner: username,
-        status: ApiKeyStatus.ACTIVE,
+        status: status ?? defaultStatus,
       },
     });
-    return BaseResponse.getSuccessResponse<ApiKeyResponseDto>(
+    return BaseResponse.getResponse<ApiKeyResponseDto>(
       new ApiKeyResponseDto(newApiKey, expiryDate, description),
     );
   }
@@ -101,7 +113,7 @@ export class ApiKeyManagerService {
   async getAvailableTiers() {
     const data = await this.prismaService.apiKeyTier.findMany();
     const result = data.map((item: any) => ApiKeyTierDto.build(item));
-    return BaseResponse.getSuccessResponse<ApiKeyTierDto[]>(result);
+    return BaseResponse.getResponse<ApiKeyTierDto[]>(result);
   }
 
   async rotateKey(apiKeyDto: RotateApiKeyDto) {
@@ -120,7 +132,7 @@ export class ApiKeyManagerService {
       },
     });
 
-    return BaseResponse.getSuccessResponse<ApiKeyResponseDto>(
+    return BaseResponse.getResponse<ApiKeyResponseDto>(
       new ApiKeyResponseDto(newApiKey, expiryDate),
     );
   }
@@ -129,9 +141,7 @@ export class ApiKeyManagerService {
     const data = await this.prismaService.apiKeyTier.create({
       data: createTierDto,
     });
-    return BaseResponse.getSuccessResponse<ApiKeyTierDto>(
-      ApiKeyTierDto.build(data),
-    );
+    return BaseResponse.getResponse<ApiKeyTierDto>(ApiKeyTierDto.build(data));
   }
 
   async deleteTier(id: number) {
@@ -140,7 +150,7 @@ export class ApiKeyManagerService {
         id,
       },
     });
-    return BaseResponse.getSuccessResponse<any>(data);
+    return BaseResponse.getResponse<any>(data);
   }
 
   async updateTier(updateTierDto: UpdateTierRequest) {
@@ -150,7 +160,7 @@ export class ApiKeyManagerService {
       },
       data: updateTierDto,
     });
-    return BaseResponse.getSuccessResponse<any>(data);
+    return BaseResponse.getResponse<any>(data);
   }
 
   async getTierById(id: number) {
@@ -159,6 +169,23 @@ export class ApiKeyManagerService {
         id,
       },
     });
-    return BaseResponse.getSuccessResponse(ApiKeyTierDto.build(data));
+    return BaseResponse.getResponse(ApiKeyTierDto.build(data));
+  }
+
+  async updateApiKeyStatus(updateKeyReq: UpdateKeyRequest) {
+    const { tierId, username, status, apiKey } = updateKeyReq;
+    const data = await this.prismaService.apiKey.update({
+      where: {
+        apiKey_tierId: {
+          apiKey,
+          tierId,
+        },
+        owner: username,
+      },
+      data: {
+        status,
+      },
+    });
+    return BaseResponse.getResponse<any>(data);
   }
 }

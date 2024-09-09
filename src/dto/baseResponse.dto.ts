@@ -11,7 +11,15 @@ export class BaseResponse<T> {
   @ApiProperty({ type: () => Object })
   responseData: T | undefined;
 
-  static getSuccessResponse<T>(data?: T, message?: string, status?: number) {
+  /**
+   * Create a BaseResponse with given data, message and status.
+   *
+   * @param data the data to be returned in the response
+   * @param message the message to be returned in the response
+   * @param status the status of the response
+   * @returns a BaseResponse with the given data, message and status
+   */
+  static getResponse<T>(data?: T, message?: string, status?: number) {
     const response: BaseResponse<T> = new BaseResponse();
     response.responseCode = status ?? HttpStatus.OK;
     response.responseMessage = message ?? 'Success';

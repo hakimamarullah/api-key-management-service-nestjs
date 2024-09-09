@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { ApiKeyStatus } from '@prisma/client';
 
-export class GenerateKeyRequest {
+export class UpdateKeyRequest {
   @ApiProperty({
     description: 'username',
     required: true,
@@ -17,6 +17,11 @@ export class GenerateKeyRequest {
     { message: 'tierId must be a number' },
   )
   tierId: number;
+
+  @ApiProperty({ description: 'Api Key', required: true })
+  @IsString({ message: 'apiKey must be a string' })
+  @IsNotEmpty({ message: 'apiKey is required' })
+  apiKey: string;
 
   @ApiProperty({
     description: 'Api Key Status',

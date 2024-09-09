@@ -24,6 +24,7 @@ import { ValidateKeyResponse } from './dto/response/validateKey.response';
 import { CreateTierRequest } from './dto/request/createTier.request';
 import { UpdateTierRequest } from './dto/request/updateTier.request';
 import { Public } from '../auth/decorator/public.decorator';
+import { UpdateKeyRequest } from './dto/request/updateKey.request';
 
 @ApiBearerAuth()
 @ApiTags('ApiKeyManager Controller')
@@ -99,5 +100,14 @@ export class ApiKeyManagerController {
   @ApiParamId({ name: 'tierId' })
   async getTierById(@Param('tierId', ParseIntPipe) tierId: number) {
     return this.apiKeymanager.getTierById(tierId);
+  }
+
+  @Put('api-keys/status')
+  @ApiOperation({ summary: 'Update API Key Status' })
+  @HttpCode(HttpStatus.OK)
+  @ApiBaseResponse({ model: Object })
+  @ApiBody({ type: UpdateKeyRequest })
+  async updateApiKeyStatus(@Body() request: UpdateKeyRequest) {
+    return await this.apiKeymanager.updateApiKeyStatus(request);
   }
 }
