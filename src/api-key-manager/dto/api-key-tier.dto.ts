@@ -14,6 +14,9 @@ export class ApiKeyTierDto {
   limit: number;
 
   @ApiProperty()
+  price: number;
+
+  @ApiProperty()
   description?: string;
 
   static build(data: any) {
@@ -23,6 +26,7 @@ export class ApiKeyTierDto {
     response.ttl = data?.ttl;
     response.limit = data?.limit;
     response.description = data?.description;
+    response.price = data?.price;
     return response;
   }
 }
