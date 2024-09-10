@@ -17,10 +17,6 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
-import {
-  ApiBaseResponse,
-  ApiParamId,
-} from '../common/decorators/swagger.decorator';
 import { ApiKeyResponseDto } from './dto/response/api-key-response.dto';
 import { ApiKeyManagerService } from './api-key-manager.service';
 import { RotateApiKeyDto } from './dto/rotate-api-key.dto';
@@ -29,8 +25,12 @@ import { GenerateKeyRequest } from './dto/request/generateKey.request';
 import { ValidateKeyResponse } from './dto/response/validateKey.response';
 import { CreateTierRequest } from './dto/request/createTier.request';
 import { UpdateTierRequest } from './dto/request/updateTier.request';
-import { Public } from '../auth/decorator/public.decorator';
 import { UpdateKeyRequest } from './dto/request/updateKey.request';
+import {
+  ApiBaseResponse,
+  ApiParamId,
+} from '@hakimamarullah/commonbundle-nestjs';
+import { Public } from '@hakimamarullah/commonbundle-nestjs';
 
 @ApiBearerAuth()
 @ApiTags('ApiKeyManager Controller')

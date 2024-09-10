@@ -4,7 +4,7 @@ FROM node:20-alpine As development
 WORKDIR /usr/src/app
 
 COPY --chown=node:node package*.json ./
-
+COPY --chown=node:node .npmrc .npmrc
 # Install app dependencies using the `npm ci` command instead of `npm install`
 RUN npm ci
 

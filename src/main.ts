@@ -5,8 +5,10 @@ import { ConfigService } from '@nestjs/config';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { json, urlencoded } from 'express';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { ErrorFilter } from './common/exceptions/error.filter';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import {
+  ErrorFilter,
+  LoggingInterceptor,
+} from '@hakimamarullah/commonbundle-nestjs';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -36,9 +38,14 @@ async function bootstrap() {
 
   const port: number = configService.get('SERVER_PORT', 3000);
   const config = new DocumentBuilder()
-    .setTitle(configService.get<string>('SWAGGER_TITLE', 'Auth-Service'))
+    .setTitle(
+      configService.get<string>('SWAGGER_TITLE', 'API-Key-Management-Service'),
+    )
     .setDescription(
-      configService.get<string>('SWAGGER_DESCRIPTION', 'Auth-Service API'),
+      configService.get<string>(
+        'SWAGGER_DESCRIPTION',
+        'API-Key-Management API',
+      ),
     )
     .setVersion(configService.get<string>('APP_VERSION', '1.0'))
     .addBearerAuth({

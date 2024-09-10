@@ -1,14 +1,6 @@
 import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CachingService } from '../caching/caching.service';
-import { CacheConstant } from '../caching/cache.constant';
-import { BaseResponse } from '../dto/baseResponse.dto';
 import { ApiKeyResponseDto } from './dto/response/api-key-response.dto';
-import {
-  addDays,
-  generateApiKey,
-  next30Days,
-} from '../common/utils/common.util';
 import { ApiKeyTierDto } from './dto/api-key-tier.dto';
 import { RotateApiKeyDto } from './dto/rotate-api-key.dto';
 import { GenerateKeyRequest } from './dto/request/generateKey.request';
@@ -17,6 +9,14 @@ import { ValidateKeyResponse } from './dto/response/validateKey.response';
 import { CreateTierRequest } from './dto/request/createTier.request';
 import { UpdateTierRequest } from './dto/request/updateTier.request';
 import { UpdateKeyRequest } from './dto/request/updateKey.request';
+import {
+  addDays,
+  BaseResponse,
+  CacheConstant,
+  CachingService,
+  generateApiKey,
+  next30Days,
+} from '@hakimamarullah/commonbundle-nestjs';
 
 @Injectable()
 export class ApiKeyManagerService {
@@ -27,7 +27,11 @@ export class ApiKeyManagerService {
 
   async validateApiKey(apiKey?: string) {
     if (!apiKey) {
-      return BaseResponse.getBadRequestResponse(null, 'Missing api key');
+      return BaseResponse.getResponse(
+        null,
+        'Missing api key',
+        HttpStatus.BAD_REQUEST,
+      );
     }
     const getApiKeyDb = async () => {
       return this.prismaService.apiKey.findFirstOrThrow({
