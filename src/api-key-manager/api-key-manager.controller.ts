@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Req,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -29,29 +30,32 @@ import { UpdateKeyRequest } from './dto/request/updateKey.request';
 import {
   ApiBaseResponse,
   ApiParamId,
+  getUsername,
+  Public,
 } from '@hakimamarullah/commonbundle-nestjs';
-import { Public } from '@hakimamarullah/commonbundle-nestjs';
+import { Request } from 'express';
 
 @ApiBearerAuth()
 @ApiTags('ApiKeyManager Controller')
 @Controller('api-key-manager')
 export class ApiKeyManagerController {
-  constructor(private apiKeymanager: ApiKeyManagerService) {}
+  constructor(private apiKeyManager: ApiKeyManagerService) {}
   @Post('generate')
   @ApiOperation({ summary: 'Create new API Key with the given tier and owner' })
   @HttpCode(HttpStatus.OK)
   @ApiBaseResponse({ model: ApiKeyResponseDto })
   @ApiBody({ type: GenerateKeyRequest })
   async generateApiKey(@Body() request: GenerateKeyRequest) {
-    return this.apiKeymanager.generateApiKey(request);
+    return this.apiKeyManager.generateApiKey(request);
   }
 
   @Get('tiers')
+  @Public()
   @ApiOperation({ summary: 'List available tiers' })
   @HttpCode(HttpStatus.OK)
   @ApiBaseResponse({ model: ApiKeyTierDto, isArray: true })
   async getAvailableTiers() {
-    return this.apiKeymanager.getAvailableTiers();
+    return this.apiKeyManager.getAvailableTiers();
   }
 
   @Post('rotate')
@@ -60,7 +64,7 @@ export class ApiKeyManagerController {
   @ApiBaseResponse({ model: ApiKeyResponseDto })
   @ApiBody({ type: RotateApiKeyDto })
   async rotateApiKey(@Body() apiKey: RotateApiKeyDto) {
-    return this.apiKeymanager.rotateKey(apiKey);
+    return this.apiKeyManager.rotateKey(apiKey);
   }
 
   @Get('validate/:apiKey')
@@ -68,7 +72,7 @@ export class ApiKeyManagerController {
   @HttpCode(HttpStatus.OK)
   @ApiBaseResponse({ model: ValidateKeyResponse })
   async validateApiKey(@Param('apiKey') apiKey: string) {
-    return this.apiKeymanager.validateApiKey(apiKey);
+    return this.apiKeyManager.validateApiKey(apiKey);
   }
 
   @Post('tiers')
@@ -77,7 +81,7 @@ export class ApiKeyManagerController {
   @ApiBaseResponse({ model: ApiKeyTierDto })
   @ApiBody({ type: CreateTierRequest })
   async createTier(@Body() request: CreateTierRequest) {
-    return this.apiKeymanager.createTier(request);
+    return this.apiKeyManager.createTier(request);
   }
 
   @Delete('tiers/:tierId')
@@ -86,7 +90,7 @@ export class ApiKeyManagerController {
   @ApiBaseResponse({ model: Object })
   @ApiParamId({ name: 'tierId' })
   async deleteTier(@Param('tierId', ParseIntPipe) tierId: number) {
-    return this.apiKeymanager.deleteTier(tierId);
+    return this.apiKeyManager.deleteTier(tierId);
   }
 
   @Put('tiers')
@@ -95,7 +99,7 @@ export class ApiKeyManagerController {
   @ApiBaseResponse({ model: Object })
   @ApiBody({ type: UpdateTierRequest })
   async updateTier(@Body() request: UpdateTierRequest) {
-    return this.apiKeymanager.updateTier(request);
+    return this.apiKeyManager.updateTier(request);
   }
 
   @Get('tiers/:tierId/details')
@@ -105,7 +109,7 @@ export class ApiKeyManagerController {
   @ApiBaseResponse({ model: ApiKeyTierDto })
   @ApiParamId({ name: 'tierId' })
   async getTierById(@Param('tierId', ParseIntPipe) tierId: number) {
-    return this.apiKeymanager.getTierById(tierId);
+    return this.apiKeyManager.getTierById(tierId);
   }
 
   @Put('api-keys/status')
@@ -114,7 +118,7 @@ export class ApiKeyManagerController {
   @ApiBaseResponse({ model: Object })
   @ApiBody({ type: UpdateKeyRequest })
   async updateApiKeyStatus(@Body() request: UpdateKeyRequest) {
-    return await this.apiKeymanager.updateApiKeyStatus(request);
+    return await this.apiKeyManager.updateApiKeyStatus(request);
   }
 
   @Get('api-keys/:username/active')
@@ -122,6 +126,14 @@ export class ApiKeyManagerController {
   @ApiBaseResponse({ model: ApiKeyResponseDto, isArray: true })
   @ApiParam({ name: 'username' })
   async getApiKeysByUsername(@Param('username') username: string) {
-    return await this.apiKeymanager.getActiveApiKeysByUsername(username);
+    return await this.apiKeyManager.getActiveApiKeysByUsername(username);
+  }
+
+  @Get('api-keys/active/me')
+  @HttpCode(HttpStatus.OK)
+  @ApiBaseResponse({ model: ApiKeyResponseDto, isArray: true })
+  async getApiKeysMe(@Req() req: Request) {
+    const username = getUsername(req);
+    return await this.apiKeyManager.getActiveApiKeysByUsername(username);
   }
 }
