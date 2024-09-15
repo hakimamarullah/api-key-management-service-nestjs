@@ -13,6 +13,7 @@ import {
   CachingService,
   JwtConfigService,
 } from '@hakimamarullah/commonbundle-nestjs';
+import { SchedulerModule } from './scheduler/scheduler.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import {
       inject: [JwtConfigService],
     }),
     AppPropertiesModule,
+    SchedulerModule,
   ],
   providers: [
     PrismaService,
