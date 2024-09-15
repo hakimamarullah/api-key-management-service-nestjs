@@ -67,12 +67,15 @@ export class ApiKeyManagerService {
         owner: username,
         status: ApiKeyStatus.ACTIVE,
       },
+      include: {
+        tier: true,
+      },
     });
 
     let expiryDate: Date;
     let description: string;
     const newApiKey: string = generateApiKey();
-    const isFreeTier = (oldApiKey as any)?.name === 'FREE';
+    const isFreeTier = (oldApiKey as any)?.tier?.name === 'FREE';
     if (oldApiKey) {
       if (isFreeTier) {
         return BaseResponse.getResponse(
