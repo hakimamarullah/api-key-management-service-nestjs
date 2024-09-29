@@ -14,12 +14,14 @@ import {
   JwtConfigService,
 } from '@hakimamarullah/commonbundle-nestjs';
 import { SchedulerModule } from './scheduler/scheduler.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     CachingModule,
     ConfigModule.forRoot({ isGlobal: true, cache: true }),
     ApiKeyManagerModule,
+    ScheduleModule.forRoot({ cronJobs: true }),
     PrismaModule,
     JwtModule.registerAsync({
       imports: [AuthModule],
