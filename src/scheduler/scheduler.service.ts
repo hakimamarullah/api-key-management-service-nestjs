@@ -8,7 +8,7 @@ export class SchedulerService {
   private logger: Logger = new Logger(SchedulerService.name);
   constructor(private prismaService: PrismaService) {}
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async updateExpiredApiKeys() {
     const now = new Date();
     this.logger.log(`Updating expired API keys... Date: ${now}`);
